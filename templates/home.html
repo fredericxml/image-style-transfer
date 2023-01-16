@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="col-md-8 offset-md-2">
+
+    <form method="POST" enctype="multipart/form-data" class="input-group">
+      <div class="container">
+        <div class="row mb-4">
+          <input type="file" name="photo" class="form-control" aria-describedby="Upload Photo" aria-label="Upload">
+        </div>
+        
+        <div class="row">
+          <div class="col-6 text-center">
+            <button type="submit" formaction="/sketch-result" class="btn btn-outline-primary">Sketch</button>
+          </div>
+          <div class="col-6 text-center">
+            <button type="submit" formaction="/cartoon-result" class="btn btn-outline-primary">Cartoonize</button>
+          </div>
+        </div>
+      </div>
+    </form>
+    
+  </div>
+{% endblock %}

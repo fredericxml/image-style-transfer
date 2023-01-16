@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="text-center mb-5">
+    <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Back to home</a>
+  </div>
+
+  <div class="col-sm-6 offset-sm-3 text-center">
+    <img src="{{ data.image_src }}" class="w-100 mb-4" id="img" alt="Result">
+
+    {% if data.type == 'sketch' %}
+      <label for="sharpness-slider" class="form-label mb-0">Sharpness</label>
+      <input type="range" min="4" max="40" value="4" class="form-range mb-5" id="sharpness-slider">
+    {% endif %}
+
+    <button id="download" data-src="{{ data.image_src }}" class="btn btn-success">Download</button>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    const img = document.getElementById('img');
+    const downloadButton = document.getElementById('download');
+    const sharpnessSlider = document.getElementById('sharpness-slider');
+  
+    if (sharpnessSlider) {
+      sharpnessSlider.onchange = () => {
+        const options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify({ 'sharpen_value': sharpnessSlider.value })
+        };
+  
+        fetch('/remake-sketch', options)
+          .then(response => response.json())
+          .then(data => {
+            img.src = data.image_src;
+            downloadButton.dataset.src = data.image_src;
+          })
+          .catch(console.error);
+      }
+    }
+
+    downloadButton.onclick = () => {
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadButton.dataset.src;
+      downloadLink.download = 'download.png';
+      downloadLink.click();
+    }
+  </script>
+{% endblock %}
