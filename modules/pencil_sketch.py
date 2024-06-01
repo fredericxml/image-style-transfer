@@ -1,10 +1,16 @@
+import os
 import base64
 
 import cv2
 import numpy as np
 
 
-sketch_bg = cv2.imread('static/img/pencil-sketch-bg.jpg', cv2.CV_8UC1)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(current_dir)
+
+background_image_path = os.path.join(base_dir, 'static', 'img', 'pencil-sketch-bg.jpg')
+sketch_bg = cv2.imread(background_image_path, cv2.CV_8UC1)
+
 current_state = {'bg': None, 'img': None}
 
 
