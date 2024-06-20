@@ -1,9 +1,13 @@
+const craftingRoomSection = document.getElementById('crafting-room');
 const tryFeatureButtons = document.querySelectorAll('#recommendations .try-feature');
 const featureCollapses = document.querySelectorAll('#crafting-room .collapse');
 tryFeatureButtons.forEach(button => {
     button.addEventListener('click', function () {
         featureCollapses.forEach(collapse => {
             collapse.classList.remove('show');
+            collapse.addEventListener('shown.bs.collapse', function () {
+                craftingRoomSection.scrollIntoView({ behavior: 'smooth' });
+            });
         });
     });
 });
@@ -16,19 +20,35 @@ const pencilSharpnessWrapper = document.querySelector('#crafting-room .pencil-sh
 const pencilSharpnessSlider = pencilSharpnessWrapper.querySelector('input');
 
 featureCollapses.forEach(collapse => {
-    const imageInputs = collapse.querySelectorAll('input');
+    const imageInputs = collapse.querySelectorAll('input[type="file"]');
     const submitButton = collapse.querySelector('.btn-submit');
+    const popularTab = collapse.querySelector('#tab-style-blender-popular');
 
-    imageInputs.forEach(input => {
-        input.addEventListener('input', function () {
-            let emptyInputCount = imageInputs.length;
-            imageInputs.forEach(imageInput => {
-                if (imageInput.files.length) emptyInputCount--;
-            });
-            // Disable button if there is any empty input
-            submitButton.disabled = emptyInputCount;
+    function handleSubmitButtonDisable() {
+        let emptyInputCount = imageInputs.length;
+        imageInputs.forEach(input => {
+            const tabPane = input.closest('.tab-pane');
+            if (tabPane) {
+                // If input is in tab pane and tab is active, only for style blender
+                if (tabPane.classList.contains('active') && input.files.length)
+                    emptyInputCount--;
+            } else {
+                if (input.files.length) emptyInputCount--;
+            }
         });
-    });
+        if (collapse.dataset.id === 'style-blender') {
+            if (popularTab.classList.contains('active')) emptyInputCount--;
+        }
+        // Disable button if the number of input is not complete
+        submitButton.disabled = emptyInputCount;
+    }
+    if (collapse.dataset.id === 'style-blender') {
+        const tabButtons = collapse.querySelectorAll('.nav-link');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', handleSubmitButtonDisable);
+        });
+    }
+    imageInputs.forEach(input => (input.addEventListener('input', handleSubmitButtonDisable)));
 
     const loadingButton = collapse.querySelector('.btn-loading');
     const helperText = collapse.querySelector('.form-text');
@@ -39,10 +59,33 @@ featureCollapses.forEach(collapse => {
         helperText.classList.remove('d-none');
         helperText.innerText = 'Hold on, let me cook! It should not take more than three minutes...';
 
+        let hasInvalidFile = false;
+        const validFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
         const formData = new FormData();
         imageInputs.forEach((input, index) => {
-            formData.append(`image_${index}`, input.files[0]);
+            const file = input.files[0];
+            const tabPane = input.closest('.tab-pane');
+            if (tabPane) {
+                // If input is in tab pane and tab is active, only for style blender
+                if (tabPane.classList.contains('active')) {
+                    if (validFileTypes.includes(file.type))
+                        formData.append(`image_${index}`, file);
+                    else hasInvalidFile = true;
+                }
+            } else {
+                if (validFileTypes.includes(file.type))
+                    formData.append(`image_${index}`, file);
+                else hasInvalidFile = true;
+            }
         });
+        if (hasInvalidFile) {
+            helperText.innerText = 'Only JPEG and PNG files are allowed.';
+            submitButton.classList.toggle('d-none');
+            loadingButton.classList.toggle('d-none');
+            return;
+        }
+
         for (const item of param) {
             Object.entries(item).forEach(([key, value]) => {
                 formData.append(key, value);
@@ -70,12 +113,30 @@ featureCollapses.forEach(collapse => {
                 loadingButton.classList.toggle('d-none');
                 resultSection.classList.remove('d-none');
             })
-            .catch(console.error);
+            .catch(error => {
+                console.error('Fetch error:', error);
+                helperText.innerText = 'An error occurred while processing the request.';
+                submitButton.classList.toggle('d-none');
+                loadingButton.classList.toggle('d-none');
+            });
     }
 
     submitButton.addEventListener('click', function () {
         pencilSharpnessSlider.value = pencilSharpnessSlider.getAttribute('min');
-        process([]);
+
+        let param = [];
+        if (collapse.dataset.id === 'style-blender') {
+            if (popularTab.classList.contains('active')) {
+                const options = collapse.querySelectorAll('input[name="style-template"]');
+
+                let selectedStyle;
+                for (const option of options) {
+                    if (option.checked) selectedStyle = option.value;
+                }
+                param.push({ style_filename: selectedStyle });
+            }
+        }
+        process(param);
     });
 
     // Pencil sketch feature

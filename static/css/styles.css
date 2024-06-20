@@ -1,9 +1,16 @@
 body {
   font-family: Poppins;
 }
+
 .collapsing {
   transition: none !important;
 }
+
+.collapse #style-blender-popular img {
+  width: 100px;
+  height: 100px;
+}
+
 #sharpness-slider {
   width: 90%;
 }
