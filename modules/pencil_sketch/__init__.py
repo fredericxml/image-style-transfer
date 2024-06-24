@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utilities import base_path, base64_uri_from_array
+from utilities.utils import base_path, base64_uri_from_array
 
 
 background_image_path = base_path('modules', 'pencil_sketch', 'shading-background.jpg')
@@ -46,4 +46,7 @@ def make_sketch(file, sharpen_factor):
 
     image = cv2.multiply(image, bg, scale=1/255)
 
-    return base64_uri_from_array(image)
+    return {
+        'image': base64_uri_from_array(image),
+        'dimension': f'{image.shape[0]}x{image.shape[1]}'
+    }

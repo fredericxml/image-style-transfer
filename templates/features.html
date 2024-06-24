@@ -4,7 +4,8 @@
     {% for feature in features %}
     <div class="col-md-6 col-lg-4">
       <div class="card">
-        <img src="{{ url_for('static', filename='images/shading-background.jpg') }}" class="card-img-top" alt="">
+        <img src="{{ url_for('static', filename='images/feature-' ~ feature.id ~ '.webp') }}" class="card-img-top pt-3"
+          alt="">
         <div class="card-body">
           <h3 class="card-title fs-5">{{ feature.title }}</h3>
           <p class="card-text">{{ feature.description }}</p>
@@ -24,7 +25,8 @@
 
     <div class="row align-items-center">
       <div class="col-lg-6">
-        <img src="{{ url_for('static', filename='images/shading-background.jpg') }}" alt="" class="img-fluid rounded">
+        <img src="{{ url_for('static', filename='images/feature-' ~ feature.id ~ '.webp') }}" alt=""
+          class="img-fluid rounded">
       </div>
       <div class="col-lg-6 mt-5 mt-lg-0 text-center text-lg-start">
         <h3 class="fs-4 mb-5">{{ feature.title }}</h3>
@@ -83,32 +85,35 @@
         </div>
       </div>
     </div>
-  </div>
-  {% endfor %}
 
-  <div class="row d-none mt-5 result-section">
-    <h3 class="fs-4 text-center mb-4">Bon Appétit</h3>
+    <div class="row d-none mt-5 result-section">
+      <h3 class="fs-4 text-center mb-4">Bon Appétit</h3>
 
-    <div class="col-md-6 position-relative">
-      <span class="badge position-absolute text-bg-warning m-2">Before</span>
-      <img src="" alt="" class="img-fluid rounded result-before">
-    </div>
-    <div class="col-md-6 position-relative mt-4 mt-md-0">
-      <span class="badge position-absolute text-bg-warning m-2">After</span>
-      <img src="" alt="" class="img-fluid rounded result-after">
-    </div>
+      <div class="col-md-6 position-relative">
+        <span class="badge position-absolute text-bg-warning m-2">Before</span>
+        <img src="" alt="" class="img-fluid rounded result-before">
+      </div>
+      <div class="col-md-6 position-relative mt-4 mt-md-0">
+        <span class="badge position-absolute text-bg-warning m-2">After</span>
+        <img src="" alt="" class="img-fluid rounded result-after">
+      </div>
 
-    <div class="pencil-sharpness-wrapper w-75 mx-auto mt-5 d-nonex">
-      <div class="row">
-        <div class="col-md-10 offset-md-1 col-lg-6 offset-lg-3">
-          <label for="pencil-sharpness-slider" class="form-label mb-0">Sharpness</label>
-          <input type="range" min="4" max="40" value="4" class="form-range" id="pencil-sharpness-slider">
+      {% if feature.id == 'pencil-sketch' %}
+      <div class="pencil-sharpness-wrapper w-75 mx-auto mt-5">
+        <div class="row">
+          <div class="col-md-10 offset-md-1 col-lg-6 offset-lg-3">
+            <label for="pencil-sharpness-slider" class="form-label mb-0">Sharpness</label>
+            <input type="range" min="4" max="40" value="4" class="form-range" id="pencil-sharpness-slider">
+          </div>
         </div>
       </div>
-    </div>
+      {% endif %}
 
-    <div class="text-center">
-      <button data-src="" class="btn btn-outline-dark btn-download py-2 px-5 mt-5">Download</button>
+      <div class="text-center">
+        <button data-src="" data-range_name=""
+          class="btn btn-outline-dark btn-download py-2 px-5 mt-5">Download</button>
+      </div>
     </div>
   </div>
+  {% endfor %}
 </div>

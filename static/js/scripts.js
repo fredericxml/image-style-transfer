@@ -1,3 +1,15 @@
+async function bannerDescriptionTypeEffect() {
+    const bannerDescription = document.querySelector('.banner-description');
+    const text = bannerDescription.dataset.description + "\n\nLet's style your dream photo!";
+    bannerDescription.innerText = '';
+
+    for (let i = 0; i < text.length; i++) {
+        bannerDescription.innerText += text.charAt(i);
+        await new Promise(resolve => setTimeout(resolve, 20));
+    }
+}
+bannerDescriptionTypeEffect();
+
 const craftingRoomSection = document.getElementById('crafting-room');
 const tryFeatureButtons = document.querySelectorAll('#recommendations .try-feature');
 const featureCollapses = document.querySelectorAll('#crafting-room .collapse');
@@ -11,13 +23,6 @@ tryFeatureButtons.forEach(button => {
         });
     });
 });
-
-const resultSection = document.querySelector('#crafting-room .result-section');
-const resultBefore = document.querySelector('#crafting-room .result-before');
-const resultAfter = document.querySelector('#crafting-room .result-after');
-
-const pencilSharpnessWrapper = document.querySelector('#crafting-room .pencil-sharpness-wrapper');
-const pencilSharpnessSlider = pencilSharpnessWrapper.querySelector('input');
 
 featureCollapses.forEach(collapse => {
     const imageInputs = collapse.querySelectorAll('input[type="file"]');
@@ -52,6 +57,10 @@ featureCollapses.forEach(collapse => {
 
     const loadingButton = collapse.querySelector('.btn-loading');
     const helperText = collapse.querySelector('.form-text');
+    const downloadButton = collapse.querySelector('.btn-download');
+    const resultSection = collapse.querySelector('.result-section');
+    const resultBefore = collapse.querySelector('.result-before');
+    const resultAfter = collapse.querySelector('.result-after');
 
     function process(param) {
         submitButton.classList.toggle('d-none');
@@ -107,6 +116,7 @@ featureCollapses.forEach(collapse => {
 
                 resultAfter.src = data.result;
                 downloadButton.dataset.src = data.result;
+                downloadButton.dataset.range_name = data.range_name;
 
                 helperText.classList.toggle('d-none');
                 submitButton.classList.toggle('d-none');
@@ -114,12 +124,15 @@ featureCollapses.forEach(collapse => {
                 resultSection.classList.remove('d-none');
             })
             .catch(error => {
-                console.error('Fetch error:', error);
+                console.error('Error:', error);
                 helperText.innerText = 'An error occurred while processing the request.';
                 submitButton.classList.toggle('d-none');
                 loadingButton.classList.toggle('d-none');
             });
     }
+
+
+    const pencilSharpnessSlider = document.querySelector('#crafting-room #pencil-sharpness-slider');
 
     submitButton.addEventListener('click', function () {
         pencilSharpnessSlider.value = pencilSharpnessSlider.getAttribute('min');
@@ -139,25 +152,32 @@ featureCollapses.forEach(collapse => {
         process(param);
     });
 
-    // Pencil sketch feature
-    collapse.addEventListener('shown.bs.collapse', function () {
-        if (collapse.dataset.id === 'pencil-sketch') {
-            pencilSharpnessWrapper.classList.remove('d-none');
-        } else {
-            pencilSharpnessWrapper.classList.add('d-none');
-        }
-    });
+    // Pencil sketch slider handler
     if (collapse.dataset.id === 'pencil-sketch') {
         pencilSharpnessSlider.addEventListener('change', function () {
-            process([{ sharpen_factor: pencilSharpnessSlider.value }]);
+            process([{
+                sharpen_factor: pencilSharpnessSlider.value,
+                range_name: downloadButton.dataset.range_name
+            }]);
         });
     }
-});
 
-const downloadButton = document.querySelector('#crafting-room .btn-download');
-downloadButton.addEventListener('click', function () {
-    const downloadLink = document.createElement('a');
-    downloadLink.href = downloadButton.dataset.src;
-    downloadLink.download = 'styledreamer-download.png';
-    downloadLink.click();
+    downloadButton.addEventListener('click', function () {
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ range_name: downloadButton.dataset.range_name })
+        };
+        fetch('/download', options)
+            .then(response => response.json())
+            .then(data => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadButton.dataset.src;
+                downloadLink.download = 'StyleDreamer-download.png';
+                downloadLink.click();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
 });

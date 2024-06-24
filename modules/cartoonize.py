@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from utilities import base_path, base64_uri_from_array
+from utilities.utils import base_path, base64_uri_from_array
 
 
 # https://www.kaggle.com/models/spsayakpaul/cartoongan
@@ -52,4 +52,7 @@ def make_cartoon(file):
     raw_output = interpreter.tensor(output_details[0]['index'])()
     final_output = postprocess_image(raw_output, source_image.shape[1:3])
 
-    return base64_uri_from_array(final_output)
+    return {
+        'image': base64_uri_from_array(final_output),
+        'dimension': f'{source_image.shape[1]}x{source_image.shape[2]}'
+    }

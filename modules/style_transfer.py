@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from utilities import base_path, base64_uri_from_array
+from utilities.utils import base_path, base64_uri_from_array
 
 
 # https://www.kaggle.com/models/spsayakpaul/arbitrary-image-stylization-inceptionv3
@@ -122,4 +122,8 @@ def do_style_transfer(content_image_file, style_image_input, from_style_template
     stylized_image = run_style_transform(style_bottleneck_blended, preprocessed_content_image)
 
     final_output = postprocess_image(stylized_image, content_image.shape[1:3])
-    return base64_uri_from_array(final_output)
+    return {
+        'image': base64_uri_from_array(final_output),
+        'content_dimension': f'{content_image.shape[1]}x{content_image.shape[2]}',
+        'style_dimension': f'{style_image.shape[1]}x{style_image.shape[2]}'
+    }

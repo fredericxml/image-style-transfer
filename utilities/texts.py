@@ -24,7 +24,7 @@ def banner_description():
         'It expands the possibilities of digital artistry with automated style application.',
         'It empowers users to create unique visual narratives from their photos using Generative AI.'
     ]
-    banner_description = 'Style Dreamer is a tool to transform photos into stunningly styled images. '
+    banner_description = 'StyleDreamer is a tool to transform photos into stunningly styled images. '
     banner_description += random.choice(banner_description_list)
     return banner_description
 
@@ -33,7 +33,7 @@ def feature_list():
     feature_list = [
         {
             'title': 'Style Blender',
-            'description': 'Turn your photos into stunning artworks with our style blender technology.',
+            'description': "Blend your photo's style with artwork, creating stunning visual masterpieces.",
             'story': 'Harnessing the power of style blender through Generative AI, photographs metamorphose into kaleidoscopic visions, blending the essence of classic paintings with contemporary imagery, evoking emotions that transcend time and technology.'},
         {
             'title': 'Cartoonize',
