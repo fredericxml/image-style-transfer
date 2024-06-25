@@ -91,7 +91,7 @@ featureCollapses.forEach(collapse => {
             }
         });
         if (hasInvalidFile) {
-            helperText.innerText = 'Only JPEG and PNG files are allowed.';
+            helperText.innerText = 'Hint: Only JPEG and PNG files are allowed.';
             submitButton.classList.toggle('d-none');
             loadingButton.classList.toggle('d-none');
             return;

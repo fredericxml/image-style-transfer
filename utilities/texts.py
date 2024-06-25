@@ -52,9 +52,9 @@ def feature_list():
 def style_template_list():
     style_template_list = [
         {'filename': 'People (AI Generated).jpg'},
-        {'filename': 'Phantasmagorical (Pripyat).jpg'},
         {'filename': 'Mona Lisa (Leonardo da Vinci).jpg'},
         {'filename': 'The Visitor (Hennie Niemann).jpg'},
+        {'filename': 'Phantasmagorical (Pripyat).jpg'},
         {'filename': 'Starry Night (Van Gogh).jpg'},
         {'filename': 'Prayer in the Garden (Sebastiano Ricci).jpg'},
         {'filename': 'The Great Wave off Kanagawa (Katsushika Hokusai).jpg'},

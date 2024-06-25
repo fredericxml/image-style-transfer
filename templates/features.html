@@ -21,72 +21,64 @@
 <div class="container py-5" id="crafting-room">
   {% for feature in features %}
   <div class="collapse" id="feature-{{ feature.id }}" data-id="{{ feature.id }}">
-    <h2 class="text-center mb-5">Crafting Room</h2>
+    <h2 class="text-center mb-5">{{ feature.title }}</h2>
 
     <div class="row align-items-center">
-      <div class="col-lg-6">
-        <img src="{{ url_for('static', filename='images/feature-' ~ feature.id ~ '.webp') }}" alt=""
-          class="img-fluid rounded">
-      </div>
-      <div class="col-lg-6 mt-5 mt-lg-0 text-center text-lg-start">
-        <h3 class="fs-4 mb-5">{{ feature.title }}</h3>
-        <p class="mb-5">{{ feature.story }}</p>
+      <div class="col-lg-8 offset-lg-2">
+        {% if feature.id == 'style-blender' %}
+        <label class="form-label mb-0">Main image</label>
+        <input type="file" class="form-control mb-4">
 
-        <div class="row text-start">
-          <div class="col-md-8">
-            {% if feature.id == 'style-blender' %}
-            <label class="form-label mb-0">Main image</label>
-            <input type="file" class="form-control mb-4">
+        <label class="form-label mb-0">Style image</label>
+        <nav>
+          <div class="nav nav-tabs" role="tablist">
+            <button class="nav-link active" id="tab-style-blender-popular" data-bs-toggle="tab"
+              data-bs-target="#style-blender-popular">Popular</button>
+            <button class="nav-link" id="tab-style-blender-upload" data-bs-toggle="tab"
+              data-bs-target="#style-blender-upload">Upload</button>
+          </div>
+        </nav>
 
-            <label class="form-label mb-0">Style image</label>
-            <nav>
-              <div class="nav nav-tabs" role="tablist">
-                <button class="nav-link active" id="tab-style-blender-popular" data-bs-toggle="tab"
-                  data-bs-target="#style-blender-popular">Popular</button>
-                <button class="nav-link" id="tab-style-blender-upload" data-bs-toggle="tab"
-                  data-bs-target="#style-blender-upload">Upload</button>
-              </div>
-            </nav>
-            <div class="tab-content">
-              <div class="tab-pane fade pt-3 show active" id="style-blender-popular">
-                <div class="row gy-2">
-                  {% for style in style_templates %}
-                  <div class="col-6">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="style-template" id="style-{{ loop.index }}"
-                        value="{{ style.filename }}" {{ 'checked' if loop.index==1 else '' }}>
-                      <label class="form-check-label" for="style-{{ loop.index }}">
-                        <img src="{{ url_for('static', filename='images/style-template/' ~ style.filename) }}" alt=""
-                          class="rounded">
-                      </label>
-                    </div>
-                  </div>
-                  {% endfor %}
+        <div class="tab-content">
+          <div class="tab-pane fade pt-3 show active" id="style-blender-popular">
+            <div class="row gy-2">
+              {% for style in style_templates %}
+              <div class="col-6 col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="style-template" id="style-{{ loop.index }}"
+                    value="{{ style.filename }}" {{ 'checked' if loop.index==1 else '' }}>
+                  <label class="form-check-label" for="style-{{ loop.index }}">
+                    <img src="{{ url_for('static', filename='images/style-template/' ~ style.filename) }}" alt=""
+                      class="rounded">
+                  </label>
                 </div>
               </div>
-              <div class="tab-pane fade pt-3" id="style-blender-upload">
-                <input type="file" class="form-control">
-              </div>
+              {% endfor %}
             </div>
-            {% else %}
+          </div>
+          <div class="tab-pane fade pt-3" id="style-blender-upload">
             <input type="file" class="form-control">
-            {% endif %}
           </div>
-          <div class="col-md-4 align-self-end mt-3 mt-md-0">
-            <button type="button" class="btn btn-dark btn-submit" disabled>Cook
-              It!</button>
-            <button class="btn btn-dark d-none btn-loading" type="button" disabled>
-              <span class="spinner-border spinner-border-sm"></span>
-              <span role="status">Cooking...</span>
-            </button>
-          </div>
-          <p class="form-text text-danger fst-italic mt-3 mb-0">Pick your {{ 'photos' if feature.id ==
-            'style-blender' else 'photo' }}</p>
+        </div>
+        {% else %}
+        <input type="file" class="form-control">
+        {% endif %}
+
+        <p class="form-text text-danger fst-italic mt-3 mb-0">Hint: Pick your {{ 'photos' if feature.id ==
+          'style-blender' else 'photo' }}</p>
+
+        <div class="text-center mt-5">
+          <button type="button" class="btn btn-dark btn-submit py-2 px-5" disabled>Cook
+            It!</button>
+          <button class="btn btn-dark d-none btn-loading py-2 px-5" type="button" disabled>
+            <span class="spinner-border spinner-border-sm"></span>
+            <span role="status">Cooking...</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="row d-none mt-5 result-section">
+    <div class="row d-none pt-4 mt-5 result-section">
       <h3 class="fs-4 text-center mb-4">Bon Appétit</h3>
 
       <div class="col-md-6 position-relative">
