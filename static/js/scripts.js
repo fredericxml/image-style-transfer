@@ -28,6 +28,7 @@ featureCollapses.forEach(collapse => {
     const imageInputs = collapse.querySelectorAll('input[type="file"]');
     const submitButton = collapse.querySelector('.btn-submit');
     const popularTab = collapse.querySelector('#tab-style-blender-popular');
+    const pencilSharpnessSpinner = collapse.querySelector('.pencil-sharpness-wrapper .spinner-border');
 
     function handleSubmitButtonDisable() {
         let emptyInputCount = imageInputs.length;
@@ -66,6 +67,7 @@ featureCollapses.forEach(collapse => {
         submitButton.classList.toggle('d-none');
         loadingButton.classList.toggle('d-none');
         helperText.classList.remove('d-none');
+        if (pencilSharpnessSpinner) pencilSharpnessSpinner.classList.toggle('d-none');
         helperText.innerText = 'Hold on, let me cook! It should not take more than three minutes...';
 
         let hasInvalidFile = false;
@@ -122,6 +124,7 @@ featureCollapses.forEach(collapse => {
                 submitButton.classList.toggle('d-none');
                 loadingButton.classList.toggle('d-none');
                 resultSection.classList.remove('d-none');
+                if (pencilSharpnessSpinner) pencilSharpnessSpinner.classList.toggle('d-none');
             })
             .catch(error => {
                 console.error('Error:', error);
