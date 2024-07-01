@@ -68,7 +68,7 @@ featureCollapses.forEach(collapse => {
         loadingButton.classList.toggle('d-none');
         helperText.classList.remove('d-none');
         if (pencilSharpnessSpinner) pencilSharpnessSpinner.classList.toggle('d-none');
-        helperText.innerText = 'Hold on, let me cook! It should not take more than three minutes...';
+        helperText.innerHTML = 'Hold on, it might take a while... If it takes longer than 3 minutes, <a href="javascript:void(0);" onclick="location.reload();">refresh</a> the page or try again later.';
 
         let hasInvalidFile = false;
         const validFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];

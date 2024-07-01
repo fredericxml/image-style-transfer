@@ -22,6 +22,10 @@ def base64_uri_from_array(image_array):
 
 
 def write_on_google_sheet(feature_sheet, data={}):
+    # Don't write anything on development environment
+    if os.getenv('MODE') == 'development':
+        return None
+    
     range_name = f'{feature_sheet}!A1:A1'
 
     values = [
@@ -46,6 +50,10 @@ def write_on_google_sheet(feature_sheet, data={}):
     
 
 def update_google_sheet(range_name, values):
+    # Don't update anything on development environment
+    if os.getenv('MODE') == 'development':
+        return None
+    
     values = values # Must be a list representing data in a row
     body = {'values': [values]}
 
@@ -62,6 +70,10 @@ def update_google_sheet(range_name, values):
 
 
 def save_image(image):
+    # Don't save image on development environment
+    if os.getenv('MODE') == 'development':
+        return None, None
+    
     response = requests.post('https://api.imgbb.com/1/upload', data={
         'key': os.getenv('IMGBB_API_KEY'),
         'image': base64.b64encode(image)
