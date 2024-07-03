@@ -138,7 +138,8 @@ def process_to_sketch():
             range_name = updated_range
         
         # Adjust sketch sharpness
-        else:
+        # Only do update on production environment
+        elif os.getenv('MODE') == 'production':
             # Take only sheet name with the sharpen_factor cell
             # Column H is sharpen_factor
             range_name = range_name.split('!')

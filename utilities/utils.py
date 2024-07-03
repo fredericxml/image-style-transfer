@@ -21,6 +21,30 @@ def base64_uri_from_array(image_array):
     return base64_uri
 
 
+def optimize_image_size(original_size):
+    original_height = original_size[0]
+    original_width = original_size[1]
+
+    target_side = 512
+    longer_side = max(original_height, original_width)
+    
+    if longer_side > target_side:
+        aspect_ratio = original_width / original_height
+
+        if original_height > original_width:
+            new_height = target_side
+            new_width = int(target_side * aspect_ratio)
+        else:
+            new_width = target_side
+            new_height = int(target_side / aspect_ratio)
+
+        target_size = [new_height, new_width]
+    else:
+        target_size = original_size
+
+    return target_size
+
+
 def write_on_google_sheet(feature_sheet, data={}):
     # Don't write anything on development environment
     if os.getenv('MODE') == 'development':

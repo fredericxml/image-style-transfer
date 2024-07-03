@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from utilities.utils import base_path, base64_uri_from_array
+from utilities.utils import base_path, base64_uri_from_array, optimize_image_size
 
 
 # https://www.kaggle.com/models/spsayakpaul/arbitrary-image-stylization-inceptionv3
@@ -47,6 +47,7 @@ def preprocess_image(image, target_size):
 
 
 def postprocess_image(raw_output, target_size):
+    target_size = optimize_image_size(target_size)
     image = tf.image.resize(raw_output, target_size)
     if len(image.shape) > 3:
         image = np.squeeze(image)    

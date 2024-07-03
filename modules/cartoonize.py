@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from utilities.utils import base_path, base64_uri_from_array
+from utilities.utils import base_path, base64_uri_from_array, optimize_image_size
 
 
 # https://www.kaggle.com/models/spsayakpaul/cartoongan
@@ -32,6 +32,7 @@ def preprocess_image(image, target_size):
 
 
 def postprocess_image(raw_prediction, target_size):
+    target_size = optimize_image_size(target_size)
     image = tf.image.resize(raw_prediction, target_size)
     image = (np.squeeze(image) + 1.0) * 127.5
     image = np.clip(image, 0, 255).astype(np.uint8)
