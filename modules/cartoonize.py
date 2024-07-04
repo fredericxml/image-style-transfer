@@ -1,3 +1,4 @@
+import gc
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -6,8 +7,6 @@ from utilities.utils import base_path, base64_uri_from_array, optimize_image_siz
 
 # https://www.kaggle.com/models/spsayakpaul/cartoongan
 model_path = base_path('models', 'cartoongan_dr.tflite')
-interpreter = tf.lite.Interpreter(model_path=model_path)
-interpreter.allocate_tensors()
 
 
 def load_image(image_buffer):
@@ -44,6 +43,8 @@ def make_cartoon(file):
     source_image = load_image(file)
     preprocessed_source_image = preprocess_image(source_image, 512)
 
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
@@ -52,6 +53,10 @@ def make_cartoon(file):
 
     raw_output = interpreter.tensor(output_details[0]['index'])()
     final_output = postprocess_image(raw_output, source_image.shape[1:3])
+    
+    # Clean up
+    del interpreter
+    gc.collect()
 
     return {
         'image': base64_uri_from_array(final_output),

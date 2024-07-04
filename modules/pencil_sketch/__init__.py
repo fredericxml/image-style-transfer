@@ -47,9 +47,9 @@ def make_sketch(file, sharpen_factor):
     image = cv2.multiply(image, bg, scale=1/255)
 
     target_size = optimize_image_size([image.shape[1], image.shape[0]])
-    image = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
+    final_image = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
 
     return {
-        'image': base64_uri_from_array(image),
+        'image': base64_uri_from_array(final_image),
         'dimension': f'{image.shape[0]}x{image.shape[1]}'
     }

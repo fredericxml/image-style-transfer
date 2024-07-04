@@ -1,3 +1,4 @@
+import gc
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -68,6 +69,11 @@ def run_style_predict(preprocessed_style_image):
     # Calculate style bottleneck
     interpreter.invoke()
     style_bottleneck = interpreter.tensor(interpreter.get_output_details()[0]['index'])()
+    
+    # Clean up
+    del interpreter
+    gc.collect()
+    
     return style_bottleneck
 
 
@@ -95,6 +101,11 @@ def run_style_transform(style_bottleneck, preprocessed_content_image):
 
     # Transform content image
     stylized_image = interpreter.tensor(interpreter.get_output_details()[0]['index'])()
+    
+    # Clean up
+    del interpreter
+    gc.collect()
+
     return stylized_image
 
 

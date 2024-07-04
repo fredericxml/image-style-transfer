@@ -4,10 +4,11 @@ from flask import Flask, render_template, request
 from modules.cartoonize import make_cartoon
 from modules.pencil_sketch import make_sketch
 from modules.style_transfer import do_style_transfer
-from utilities.utils import save_image, update_google_sheet, write_on_google_sheet
+from utilities.utils import print_current_memory_usage, save_image, update_google_sheet, write_on_google_sheet
 
 
 app = Flask(__name__)
+print_current_memory_usage('App start')
 
 
 @app.route('/', methods=['GET'])
@@ -15,6 +16,8 @@ def home():
     feature_list = texts.feature_list()
     banner_description = texts.banner_description()
     style_template_list = texts.style_template_list()
+
+    print_current_memory_usage()
 
     return render_template('home.html',
         page_title='Home',
@@ -82,6 +85,7 @@ def process_style_transfer():
             'style_filesize': style_filesize
         })
 
+        print_current_memory_usage('Style Transfer')
         return {'result': result['image'], 'range_name': updated_range}
     else:
         return {'message': 'Style blender is here! Could you please inform me if you require API access?'}
@@ -102,6 +106,7 @@ def process_to_cartoon():
             'filesize': round(len(image) / 1e6, 3) # Filesize in megabytes
         })
 
+        print_current_memory_usage('Cartoonize')
         return {'result': result['image'], 'range_name': updated_range}
     else:
         return {'message': 'Cartoonizer is here! Could you please inform me if you require API access?'}
@@ -151,6 +156,7 @@ def process_to_sketch():
 
             update_google_sheet(range_name, [sharpen_factor])
 
+        print_current_memory_usage('Pencil Sketch')
         return {'result': result['image'], 'range_name': range_name}
     else:
         return {'message': 'Pencil artist is here! Could you please inform me if you require API access?'}

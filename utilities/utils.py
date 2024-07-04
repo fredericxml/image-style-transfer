@@ -2,6 +2,7 @@ import os
 import base64
 
 import cv2
+import psutil
 import requests
 from config import BASE_PATH
 from datetime import datetime
@@ -25,7 +26,7 @@ def optimize_image_size(original_size):
     original_height = original_size[0]
     original_width = original_size[1]
 
-    target_side = 512
+    target_side = 350
     longer_side = max(original_height, original_width)
     
     if longer_side > target_side:
@@ -103,3 +104,10 @@ def save_image(image):
         'image': base64.b64encode(image)
     }).json()
     return response['data']['id'], response['data']['url']
+
+
+def print_current_memory_usage(description=''):
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    memory_after = round(mem_info.rss / (1024 ** 2), 2)
+    print(f'{description}: {memory_after} MB')
