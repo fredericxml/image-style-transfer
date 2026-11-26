@@ -130,3 +130,17 @@ dmypy.json
 
 .vscode/
 secret/
+
+# Local credentials and environment overrides
+.env.*
+!.env.example
+service-account.json
+*.pem
+*.key
+
+# Local development artifacts
+.idea/
+.DS_Store
+Thumbs.db
+.ruff_cache/
+verification-output/

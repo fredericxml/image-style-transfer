@@ -30,7 +30,7 @@
     <div class="col-lg-6 order-lg-0 text-center text-lg-start">
       <h1 class="fs-2 my-4 mt-lg-0">AI Photo Styling</h1>
       <div class="mb-5">
-        <span data-description="{{ banner_description }}" class="banner-description"></span>
+        <span class="banner-description">{{ banner_description }}</span>
       </div>
       <a href="#recommendations" class="btn btn-dark py-2 px-5">Start Styling</a>
     </div>
@@ -43,20 +43,8 @@
   <div class="row align-items-center">
     <div class="col-md-6 text-center text-md-end">
       <h2 class="mb-5">Collaboration</h2>
-      <p>
-        Hey there! I've been working on this project for fun, experimenting, and to share the awesomeness of Generative
-        AI. Are you interested in contributing to this project? Don't worry if you're not a coder, you're still more
-        than welcome! Maybe you just love brainstorming ideas, have cool features in mind, or suggestions for text or
-        visuals? Let me hear them!</p>
-      <p>
-        Or maybe you're a machine learning enthusiast or a UI/UX design enthusiast, let's collaborate and create
-        something awesome together!</p>
-      <p>
-        Reach me out on Instagram <a href="https://www.instagram.com/frederic_davidsen/">@frederic_davidsen</a> and
-        let's make the magic happen :)</p>
-      <p class="mb-0">
-        Oh, and here's a fun fact: everything on this page, from the logo to the images and text you are reading, is
-        AI-generated. Cool, right?</p>
+      <p>This project began in 2024 as an experiment in neural style transfer and classical image processing.</p>
+      <p class="mb-0">Suggestions and reproducible bug reports are welcome through the project repository.</p>
     </div>
     <div class="col-md-6 d-flex justify-content-center mt-4 mt-md-0">
       <img src="{{ url_for('static', filename='images/collaboration.webp') }}" alt="" class="img-fluid w-75 rounded">
@@ -68,14 +56,9 @@
   <div class="row align-items-center">
     <div class="col-md-6 text-center text-md-start order-md-1">
       <h2 class="mb-5">Limitations</h2>
-      <p>You might notice some funky images being generated here :) Well, that's because Generative AI is not yet
-        matured and still an evolving field in Computer Science.</p>
-      <p>Additionally, there's some compression applied to the image processing system. You can imagine a video that
-        should be 80 MB squished down to just 4 MB, it will obviously impact the resulting video quality.</p>
-      <p>Now, you might wonder why we need to deal with all this compression stuff. Well, to render high-quality pics,
-        we need a ton of computer resources, and the server that runs StyleDreamer has limited resources :(</p>
-      <p class="mb-0">So, StyleDreamer has to be savvy with its resources. But hey, it's pushing boundaries and getting
-        there, one pixel at a time!</p>
+      <p>Neural models operate at fixed input resolutions. Images are resized for processing, so outputs may lose detail or show artifacts.</p>
+      <p>Processing time depends on the host machine. JPEG and PNG uploads are limited to 10 MiB and 12 megapixels per image.</p>
+      <p class="mb-0">Images are processed on the server. Optional image archiving and activity tracking require your consent.</p>
     </div>
     <div class="col-md-6 d-flex justify-content-center mt-4 mt-md-0 order-md-0">
       <img src="{{ url_for('static', filename='images/limitations.webp') }}" alt="" class="img-fluid w-75 rounded">

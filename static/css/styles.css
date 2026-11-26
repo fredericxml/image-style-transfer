@@ -1,5 +1,5 @@
 body {
-  font-family: Poppins;
+  font-family: Poppins, system-ui, sans-serif;
 }
 
 .collapsing {
@@ -8,7 +8,10 @@ body {
 
 .collapse #style-blender-popular img {
   width: 100px;
-  height: 100px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
 }
 
 .pencil-sharpness-wrapper .spinner-border {
@@ -43,4 +46,8 @@ body {
   50% {
     border-color: orange;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-description { animation: none; border-right: 0; }
 }

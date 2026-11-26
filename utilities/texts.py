@@ -24,7 +24,7 @@ def banner_description():
         'It expands the possibilities of digital artistry with automated style application.',
         'It empowers users to create unique visual narratives from their photos using Generative AI.'
     ]
-    banner_description = 'StyleDreamer is a tool to transform photos into stunningly styled images. '
+    banner_description = 'Image Style Transfer is a tool to transform photos into stunningly styled images. '
     banner_description += random.choice(banner_description_list)
     return banner_description
 

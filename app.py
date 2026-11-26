@@ -1,167 +1,135 @@
-import utilities.texts as texts
-from secret.env import *
 from flask import Flask, render_template, request
+from werkzeug.exceptions import BadRequest, HTTPException, RequestEntityTooLarge
+
+from config import HOST, PORT, MAX_IMAGE_BYTES, MAX_REQUEST_BYTES
 from modules.cartoonize import make_cartoon
 from modules.pencil_sketch import make_sketch
 from modules.style_transfer import do_style_transfer
-from utilities.utils import print_current_memory_usage, save_image, update_google_sheet, write_on_google_sheet
-
+from utilities import analytics, texts
+from utilities.image_validation import InvalidImage
+from utilities.utils import print_current_memory_usage
 
 app = Flask(__name__)
-print_current_memory_usage('App start')
+app.config['MAX_CONTENT_LENGTH'] = MAX_REQUEST_BYTES
 
 
-@app.route('/', methods=['GET'])
+def read_upload(field):
+    upload = request.files.get(field)
+    if upload is None:
+        raise InvalidImage(f'Missing required image: {field}.')
+    data = upload.stream.read(MAX_IMAGE_BYTES + 1)
+    if not data:
+        raise InvalidImage('Image is empty.')
+    if len(data) > MAX_IMAGE_BYTES:
+        raise RequestEntityTooLarge()
+    return data
+
+
+def parse_sharpness(value):
+    if value is None:
+        return None
+    try:
+        factor = int(value)
+    except (ValueError, TypeError) as exc:
+        raise InvalidImage('Sharpness must be an integer from 4 to 40.') from exc
+    if not 4 <= factor <= 40:
+        raise InvalidImage('Sharpness must be an integer from 4 to 40.')
+    return None if factor == 4 else factor
+
+
+def process_image(operation, description):
+    try:
+        result = operation()
+        print_current_memory_usage(description)
+        return {'result': result['image'], 'range_name': result.get('range_name')}
+    except InvalidImage as exc:
+        return {'error': str(exc)}, 400
+    except HTTPException:
+        raise
+    except Exception:
+        app.logger.exception('Image processing failed: %s', description)
+        return {'error': 'Image processing failed. Please try again.'}, 500
+
+
+@app.errorhandler(BadRequest)
+def bad_request(error):
+    return {'error': 'Malformed request.'}, 400
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def upload_too_large(error):
+    return {'error': 'Each image must be at most 10 MiB; request limit is 21 MiB.'}, 413
+
+
+@app.get('/')
 def home():
-    feature_list = texts.feature_list()
-    banner_description = texts.banner_description()
-    style_template_list = texts.style_template_list()
-
-    print_current_memory_usage()
-
-    return render_template('home.html',
-        page_title='Home',
-        features=feature_list,
-        banner_description=banner_description,
-        style_templates=style_template_list
-    )
+    return render_template('home.html', page_title='Home',
+                           features=texts.feature_list(),
+                           banner_description=texts.banner_description(),
+                           style_templates=texts.style_template_list(),
+                           analytics_enabled=analytics.enabled())
 
 
-@app.route('/download', methods=['GET', 'POST'])
-def update_download_status():
-    if request.method == 'POST':
-        range_name = request.get_json().get('range_name')
-
-        # Take only sheet name with the last cell
-        range_name = range_name.split('!')
-        range_name[-1] = range_name[-1].split(':')[-1]
-        range_name = '!'.join(range_name)
-
-        return update_google_sheet(range_name, [1])
-    else:
-        return {'message': 'Thanks for downloading'}
+def attach_tracking(sheet, result, image, **kwargs):
+    if request.form.get('analytics_consent') == 'true':
+        result['range_name'] = analytics.record_processing(
+            sheet, image, request.files['image_0'].filename, result, **kwargs)
+    return result
 
 
 @app.route('/style-blender', methods=['GET', 'POST'])
 def process_style_transfer():
-    if request.method == 'POST':
-        content_image  = request.files['image_0'].read()
-        style_filename = request.form.get('style_filename')
+    if request.method == 'GET':
+        return {'message': 'Neural style transfer is available via POST.'}
 
-        content_image_id, content_image_link = save_image(content_image)
-
-        # Not using the template style image
-        if style_filename is None:
-            style_image = request.files['image_1'].read()
-            style_image_id, style_image_link = save_image(style_image)
-
-            style_filename = request.files['image_1'].filename
-            style_filesize = round(len(style_image) / 1e6, 3) # Filesize in megabytes
-
-            from_style_template = False
-        else:
-            style_image = style_filename
-            from_style_template = True
-
-            style_image_id = f'template:{style_filename}'
-            style_image_link = ''
-            style_filename = ''
-            style_filesize = ''
-        
-        result = do_style_transfer(content_image, style_image, from_style_template)
-
-        updated_range = write_on_google_sheet('Style Transfer', {
-            # Content image
-            'content_image_id': content_image_id,
-            'content_image_link': content_image_link,
-            'content_filename': request.files['image_0'].filename,
-            'content_dimension': result['content_dimension'],
-            'content_filesize': round(len(content_image) / 1e6, 3), # Filesize in megabytes
-            # Style image
-            'style_image_id': style_image_id,
-            'style_image_link': style_image_link,
-            'style_filename': style_filename,
-            'style_dimension': result['style_dimension'] if not from_style_template else '',
-            'style_filesize': style_filesize
-        })
-
-        print_current_memory_usage('Style Transfer')
-        return {'result': result['image'], 'range_name': updated_range}
-    else:
-        return {'message': 'Style blender is here! Could you please inform me if you require API access?'}
+    def operation():
+        content = read_upload('image_0')
+        template = request.form.get('style_filename')
+        if template is not None:
+            if 'image_1' in request.files:
+                raise InvalidImage('Choose a style template or upload a style image, not both.')
+            result = do_style_transfer(content, template, True)
+            return attach_tracking('Style Transfer', result, content, template=template)
+        style = read_upload('image_1')
+        result = do_style_transfer(content, style, False)
+        return attach_tracking('Style Transfer', result, content, style=style,
+                               style_filename=request.files['image_1'].filename)
+    return process_image(operation, 'Style Transfer')
 
 
 @app.route('/cartoonize', methods=['GET', 'POST'])
 def process_to_cartoon():
-    if request.method == 'POST':
-        image = request.files['image_0'].read()
-        result = make_cartoon(image)
+    if request.method == 'GET':
+        return {'message': 'Cartoonization is available via POST.'}
 
-        image_id, image_link = save_image(image)
-        updated_range = write_on_google_sheet('Cartoonize', {
-            'image_id': image_id,
-            'image_link': image_link,
-            'filename': request.files['image_0'].filename,
-            'dimension': result['dimension'],
-            'filesize': round(len(image) / 1e6, 3) # Filesize in megabytes
-        })
-
-        print_current_memory_usage('Cartoonize')
-        return {'result': result['image'], 'range_name': updated_range}
-    else:
-        return {'message': 'Cartoonizer is here! Could you please inform me if you require API access?'}
+    def operation():
+        image = read_upload('image_0')
+        return attach_tracking('Cartoonize', make_cartoon(image), image)
+    return process_image(operation, 'Cartoonize')
 
 
 @app.route('/pencil-sketch', methods=['GET', 'POST'])
 def process_to_sketch():
-    if request.method == 'POST':
-        image = request.files['image_0'].read()
-        sharpen_factor = request.form.get('sharpen_factor')
-        range_name = request.form.get('range_name')
+    if request.method == 'GET':
+        return {'message': 'Pencil sketch generation is available via POST.'}
 
-        # Adjust sketch sharpness on uploaded image
-        # New image doesn't have sharpen_factor value
-        # Set sharpen_factor to None if it's too small
-        if sharpen_factor is not None:
-            sharpen_factor = int(sharpen_factor)
-            if sharpen_factor < 5:
-                sharpen_factor = None
-        
-        result = make_sketch(image, sharpen_factor)
+    def operation():
+        image = read_upload('image_0')
+        factor = parse_sharpness(request.form.get('sharpen_factor'))
+        result = make_sketch(image, factor)
+        return attach_tracking('Pencil Sketch', result, image, factor=factor,
+                               previous=request.form.get('range_name'))
+    return process_image(operation, 'Pencil Sketch')
 
-        # New image also doesn't have range_name yet
-        if range_name is None:
-            image_id, image_link = save_image(image)
-            updated_range = write_on_google_sheet('Pencil Sketch', {
-                'image_id': image_id,
-                'image_link': image_link,
-                'filename': request.files['image_0'].filename,
-                'dimension': result['dimension'],
-                'filesize': round(len(image) / 1e6, 3), # Filesize in megabytes
-                'sharpen_factor': -1
-            })
-            range_name = updated_range
-        
-        # Adjust sketch sharpness
-        # Only do update on production environment
-        elif os.getenv('MODE') == 'production':
-            # Take only sheet name with the sharpen_factor cell
-            # Column H is sharpen_factor
-            range_name = range_name.split('!')
-            range_name[1] = 'H' + range_name[1].split(':')[-1][1:]
-            range_name = '!'.join(range_name)
-            
-            if sharpen_factor is None:
-                sharpen_factor = -1
 
-            update_google_sheet(range_name, [sharpen_factor])
-
-        print_current_memory_usage('Pencil Sketch')
-        return {'result': result['image'], 'range_name': range_name}
-    else:
-        return {'message': 'Pencil artist is here! Could you please inform me if you require API access?'}
+@app.route('/download', methods=['GET', 'POST'])
+def update_download_status():
+    if request.method == 'GET':
+        return {'message': 'Download tracking is available via POST.'}
+    data = request.get_json(silent=True)
+    token = data.get('range_name') if isinstance(data, dict) else None
+    return {'tracked': analytics.record_download(token)}
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(debug=True, host='192.168.100.103', port=5000)
+    app.run(host=HOST, port=PORT, debug=False)

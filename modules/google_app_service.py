@@ -1,17 +1,13 @@
-import os
-
-from config import BASE_PATH
-from googleapiclient.discovery import build
-from oauth2client.service_account import ServiceAccountCredentials
+from config import GOOGLE_SERVICE_ACCOUNT_FILE
 
 
 class GoogleApplicationService:
-    def __init__(self):
-        self._scopes = ['https://www.googleapis.com/auth/spreadsheets']
-        self._credential_path = os.path.join(BASE_PATH, 'secret', 'service-account.json')
-
     def build(self):
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            self._credential_path, self._scopes)
-        service = build('sheets', 'v4', credentials=credentials)
-        return service
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+
+        credentials = Credentials.from_service_account_file(
+            GOOGLE_SERVICE_ACCOUNT_FILE,
+            scopes=['https://www.googleapis.com/auth/spreadsheets'],
+        )
+        return build('sheets', 'v4', credentials=credentials, cache_discovery=False)

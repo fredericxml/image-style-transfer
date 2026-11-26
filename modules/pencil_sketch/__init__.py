@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
+from utilities.image_validation import decode_image
 from utilities.utils import base_path, base64_uri_from_array, optimize_image_size
 
 
 background_image_path = base_path('modules', 'pencil_sketch', 'shading-background.jpg')
-sketch_bg = cv2.imread(background_image_path, cv2.CV_8UC1)
+sketch_bg = cv2.imread(background_image_path, cv2.IMREAD_GRAYSCALE)
 
 
 def dodge(front: np.ndarray, back: np.ndarray) -> np.ndarray:
@@ -15,10 +16,11 @@ def dodge(front: np.ndarray, back: np.ndarray) -> np.ndarray:
     Returns:
         image: (np.ndarray) - dodged image
     """
-    result = back*255.0 / (255.0-front)
-    result[result > 255] = 255
+    denominator = 255.0 - front
+    result = np.full(front.shape, 255.0)
+    np.divide(back * 255.0, denominator, out=result, where=denominator != 0)
     result[back == 255] = 255
-    return result.astype('uint8')
+    return np.clip(result, 0, 255).astype(np.uint8)
 
 
 def sharpen(img: np.ndarray, sharpen_factor) -> np.ndarray:
@@ -34,7 +36,9 @@ def sharpen(img: np.ndarray, sharpen_factor) -> np.ndarray:
 
 
 def make_sketch(file, sharpen_factor):
-    image = cv2.imdecode(np.frombuffer(file, np.uint8), cv2.IMREAD_COLOR)
+    image = decode_image(file)
+    if sketch_bg is None:
+        raise RuntimeError('Sketch background asset is unavailable.')
     bg = cv2.resize(sketch_bg, (image.shape[1], image.shape[0]))
 
     grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -46,8 +50,8 @@ def make_sketch(file, sharpen_factor):
 
     image = cv2.multiply(image, bg, scale=1/255)
 
-    target_size = optimize_image_size([image.shape[1], image.shape[0]])
-    final_image = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
+    height, width = optimize_image_size(image.shape[:2])
+    final_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
 
     return {
         'image': base64_uri_from_array(final_image),

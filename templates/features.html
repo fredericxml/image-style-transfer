@@ -10,7 +10,7 @@
           <h3 class="card-title fs-5">{{ feature.title }}</h3>
           <p class="card-text">{{ feature.description }}</p>
           <button class="btn btn-dark py-2 px-5 try-feature" data-bs-toggle="collapse"
-            data-bs-target="#feature-{{ feature.id }}">Try Now</button>
+            data-bs-target="#feature-{{ feature.id }}" aria-controls="feature-{{ feature.id }}" aria-expanded="false">Try Now</button>
         </div>
       </div>
     </div>
@@ -20,27 +20,27 @@
 
 <div class="container py-5" id="crafting-room">
   {% for feature in features %}
-  <div class="collapse" id="feature-{{ feature.id }}" data-id="{{ feature.id }}">
+  <div class="collapse" id="feature-{{ feature.id }}" data-id="{{ feature.id }}" data-download-endpoint="{{ url_for('update_download_status') }}" data-bs-parent="#crafting-room" data-endpoint="{{ url_for({'style-blender': 'process_style_transfer', 'cartoonize': 'process_to_cartoon', 'pencil-sketch': 'process_to_sketch'}[feature.id]) }}">
     <h2 class="text-center mb-5">{{ feature.title }}</h2>
 
     <div class="row align-items-center">
       <div class="col-lg-8 offset-lg-2">
         {% if feature.id == 'style-blender' %}
-        <label class="form-label mb-0">Main image</label>
-        <input type="file" class="form-control mb-4">
+        <label for="{{ feature.id }}-main" class="form-label mb-0">Main image</label>
+        <input type="file" id="{{ feature.id }}-main" accept="image/jpeg,image/png" class="form-control mb-4">
 
-        <label class="form-label mb-0">Style image</label>
+        <p class="form-label mb-0">Style image</p>
         <nav>
           <div class="nav nav-tabs" role="tablist">
             <button class="nav-link active" id="tab-style-blender-popular" data-bs-toggle="tab"
-              data-bs-target="#style-blender-popular">Popular</button>
+              data-bs-target="#style-blender-popular" type="button" role="tab" aria-controls="style-blender-popular" aria-selected="true">Popular</button>
             <button class="nav-link" id="tab-style-blender-upload" data-bs-toggle="tab"
-              data-bs-target="#style-blender-upload">Upload</button>
+              data-bs-target="#style-blender-upload" type="button" role="tab" aria-controls="style-blender-upload" aria-selected="false">Upload</button>
           </div>
         </nav>
 
         <div class="tab-content">
-          <div class="tab-pane fade pt-3 show active" id="style-blender-popular">
+          <div class="tab-pane fade pt-3 show active" id="style-blender-popular" role="tabpanel" aria-labelledby="tab-style-blender-popular">
             <div class="row gy-2">
               {% for style in style_templates %}
               <div class="col-6 col-md-3">
@@ -48,7 +48,7 @@
                   <input class="form-check-input" type="radio" name="style-template" id="style-{{ loop.index }}"
                     value="{{ style.filename }}" {{ 'checked' if loop.index==1 else '' }}>
                   <label class="form-check-label" for="style-{{ loop.index }}">
-                    <img src="{{ url_for('static', filename='images/style-template/' ~ style.filename) }}" alt=""
+                    <img src="{{ url_for('static', filename='images/style-template/' ~ style.filename) }}" alt="{{ style.filename }}"
                       class="rounded">
                   </label>
                 </div>
@@ -56,15 +56,22 @@
               {% endfor %}
             </div>
           </div>
-          <div class="tab-pane fade pt-3" id="style-blender-upload">
-            <input type="file" class="form-control">
+          <div class="tab-pane fade pt-3" id="style-blender-upload" role="tabpanel" aria-labelledby="tab-style-blender-upload">
+            <input type="file" class="form-control" accept="image/jpeg,image/png" aria-label="Upload style image">
           </div>
         </div>
         {% else %}
-        <input type="file" class="form-control">
+        <label for="{{ feature.id }}-main" class="form-label">Main image</label>
+        <input type="file" id="{{ feature.id }}-main" class="form-control" accept="image/jpeg,image/png">
         {% endif %}
 
-        <p class="form-text text-danger fst-italic mt-3 mb-0">Hint: Pick your {{ 'photos' if feature.id ==
+        {% if analytics_enabled %}
+        <div class="form-check mt-3">
+          <input class="form-check-input analytics-consent" type="checkbox" id="{{ feature.id }}-consent">
+          <label class="form-check-label" for="{{ feature.id }}-consent">Allow image archiving and activity tracking (optional). Uploaded images will be sent to ImgBB, which may provide publicly accessible links. Filenames, dimensions, links, file sizes, processing date/time, sketch settings and download status are recorded in Google Sheets. Only share images you have permission to share.</label>
+        </div>
+        {% endif %}
+        <p class="form-text text-secondary fst-italic mt-3 mb-0" role="status" aria-live="polite">Hint: Pick your {{ 'photos' if feature.id ==
           'style-blender' else 'photo' }}</p>
 
         <div class="text-center mt-5">
@@ -83,11 +90,11 @@
 
       <div class="col-md-6 position-relative">
         <span class="badge position-absolute text-bg-warning m-2">Before</span>
-        <img src="" alt="" class="w-100 rounded result-before">
+        <img alt="Original input image" class="w-100 rounded result-before">
       </div>
       <div class="col-md-6 position-relative mt-4 mt-md-0">
         <span class="badge position-absolute text-bg-warning m-2">After</span>
-        <img src="" alt="" class="w-100 rounded result-after">
+        <img alt="Processed image" class="w-100 rounded result-after">
       </div>
 
       {% if feature.id == 'pencil-sketch' %}
@@ -98,14 +105,14 @@
             <div class="spinner-border d-none ms-1" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
-            <input type="range" min="4" max="40" value="4" class="form-range" id="pencil-sharpness-slider">
+            <input type="range" min="4" max="40" value="4" class="form-range" id="pencil-sharpness-slider" disabled>
           </div>
         </div>
       </div>
       {% endif %}
 
       <div class="text-center">
-        <button data-src="" data-range_name=""
+        <button type="button" disabled
           class="btn btn-outline-dark btn-download py-2 px-5 mt-5">Download</button>
       </div>
     </div>
