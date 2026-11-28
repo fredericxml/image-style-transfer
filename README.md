@@ -4,6 +4,10 @@ An image stylization application for neural style transfer, cartoonization, and 
 
 Originally developed in 2024 as StyleDreamer, the application combines pretrained neural networks with classical computer vision techniques in a Flask web interface.
 
+## Preview
+
+![Image Style Transfer application homepage](docs/images/preview.png)
+
 ## Features
 
 - **Style Blender:** Apply the artistic style of a custom reference image or a built-in template using a two-stage neural style transfer model.
@@ -12,6 +16,28 @@ Originally developed in 2024 as StyleDreamer, the application combines pretraine
 - **Local processing:** All inference runs on the application server without cloud inference services.
 - **Optional image archiving and analytics:** ImgBB image storage, Google Sheets metadata, sketch sharpness updates, and download tracking. Disabled by default and subject to user opt-in.
 - **PNG download:** Preview the original and processed images and save the result directly from the browser.
+
+## Example results
+
+All three screenshots were captured from the running Flask application using the same AI-generated cat image. The processed previews are actual outputs of the bundled TensorFlow Lite models and OpenCV pipeline.
+
+### Style Blender
+
+![Style Blender before and after using the Starry Night template](docs/images/style-blender.png)
+
+Style reference: **Starry Night (Van Gogh)**. Both the style prediction and style transformation models run locally.
+
+### Cartoonize
+
+![Cartoonize before and after using the cat sample](docs/images/cartoonize.png)
+
+Generated with the bundled CartoonGAN TensorFlow Lite model.
+
+### Pencil Sketch
+
+![Pencil Sketch before and after using the cat sample](docs/images/pencil-sketch.png)
+
+Generated with OpenCV at sharpness 5. No neural model is used for this mode.
 
 ## Architecture
 
@@ -39,7 +65,7 @@ Style transfer uses a 256 × 256 style input and a 350 × 350 content input. Car
 
 ## Getting started
 
-Target environment: 64-bit Python 3.11. Internet access is required to install dependencies and load the interface's CDN resources. The pinned environment and real neural inference have not been fully verified.
+Target environment: 64-bit Python 3.11. Internet access is required to install dependencies and load the interface's CDN resources. All three processing modes have been verified locally with TensorFlow CPU 2.19.1, OpenCV 4.11.0.86, NumPy 1.26.4 and Python 3.12. The complete pinned Python 3.11 environment has not been verified.
 
 | Mode | Capabilities | Configuration |
 | --- | --- | --- |
